@@ -232,8 +232,6 @@ def lambda_handler(event, context):
         "errors": errors,
     }
 
-    # Attempt all three, then fail the invocation if any failed so that
-    # CloudWatch metrics / alarms surface the problem.
     if errors:
         raise RuntimeError(f"One or more datasets failed: {summary}")
 
