@@ -1,18 +1,5 @@
 from __future__ import annotations
 
-# =============================================================================
-# NYS SLA license -> S3 mirror  (v2)
-#
-# Changes from v1 (see CODE_REVIEW.md):
-#   #3  Dated folder now uses Eastern time, not UTC, so a "daily" run never
-#       lands in the wrong day's folder (and is DST-safe).
-#   #4  Retries now use exponential backoff, and hard 4xx errors (403/404/...)
-#       are NOT retried -- only throttling/5xx/network errors are.
-#   #5  http.client.IncompleteRead (truncated download) is now caught and
-#       retried instead of silently failing the dataset.
-#   #6  Integrity check compares the uploaded size to the server's declared
-#       Content-Length when available, in addition to the small-object check.
-# =============================================================================
 
 import datetime as dt
 import http.client
@@ -42,8 +29,7 @@ HTTP_TIMEOUT = int(os.environ.get("HTTP_TIMEOUT", "300"))    # seconds, per read
 MAX_RETRIES = int(os.environ.get("MAX_RETRIES", "3"))
 BACKOFF_BASE = float(os.environ.get("BACKOFF_BASE", "2"))    # seconds; 2,4,8...
 
-# HTTP statuses worth retrying (throttling + transient server errors). Anything
-# else in the 4xx range is a hard client error -- retrying it just wastes time.
+
 _RETRYABLE_STATUS = {408, 425, 429, 500, 502, 503, 504}
 
 
@@ -59,8 +45,7 @@ DATASETS = {
         f"{FILE_PREFIX}Pending_Licenses_List.csv",
     ),
     "Inactive": (
-        # NY re-published this dataset under a new id ~mid-2026; the old id
-        # (i594-5w3n) now returns HTTP 403 on the CSV export endpoint.
+    
         os.environ.get("INACTIVE_DATASET_ID", "6dg3-2z7i"),  # Current SLA Inactive Licenses
         "inactivelicenses",
         f"{FILE_PREFIX}Inactive_Licenses_List.csv",
